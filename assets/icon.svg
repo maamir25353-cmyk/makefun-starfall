@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="32%" r="85%">
+      <stop offset="0%" stop-color="#141b4d"/>
+      <stop offset="60%" stop-color="#050514"/>
+      <stop offset="100%" stop-color="#02020a"/>
+    </radialGradient>
+    <linearGradient id="tri" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#ff0099"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+  <rect x="6" y="6" width="1012" height="1012" rx="222" fill="none" stroke="#2b3a7a" stroke-width="6"/>
+  <!-- scattered stars -->
+  <g fill="#eaf6ff">
+    <circle cx="180" cy="220" r="7"/>
+    <circle cx="830" cy="180" r="6"/>
+    <circle cx="880" cy="620" r="7"/>
+    <circle cx="140" cy="700" r="6"/>
+    <circle cx="330" cy="120" r="5"/>
+    <circle cx="700" cy="880" r="6"/>
+    <circle cx="900" cy="330" r="5"/>
+    <circle cx="120" cy="420" r="5"/>
+  </g>
+  <!-- constellation triangle -->
+  <g filter="url(#glow)">
+    <polygon points="512,190 818,700 206,700" fill="none" stroke="url(#tri)" stroke-width="16" stroke-linejoin="round"/>
+    <circle cx="512" cy="190" r="42" fill="#00e5ff"/>
+    <circle cx="818" cy="700" r="42" fill="#ff0099"/>
+    <circle cx="206" cy="700" r="42" fill="#ffe14d"/>
+    <!-- ship at the triangle's heart -->
+    <polygon points="512,430 556,540 512,512 468,540" fill="#00e5ff"/>
+  </g>
+</svg>
