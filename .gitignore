@@ -1,0 +1,17 @@
+# Dependencies — never commit; CI restores with `npm ci`
+node_modules/
+
+# Capacitor / iOS build products — generated on the runner
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+ios/App/*.xcworkspace/xcuserdata/
+ios/App/**/*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+
+# macOS / Xcode
+.DS_Store
+*.orig

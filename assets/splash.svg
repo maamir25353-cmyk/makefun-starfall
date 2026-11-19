@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#141b4d"/>
+      <stop offset="60%" stop-color="#050514"/>
+      <stop offset="100%" stop-color="#02020a"/>
+    </radialGradient>
+    <linearGradient id="tri" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#ff0099"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="26" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#bg)"/>
+  <!-- scattered stars -->
+  <g fill="#eaf6ff">
+    <circle cx="420" cy="520" r="14"/>
+    <circle cx="2320" cy="480" r="12"/>
+    <circle cx="2400" cy="1700" r="14"/>
+    <circle cx="330" cy="1900" r="12"/>
+    <circle cx="900" cy="330" r="10"/>
+    <circle cx="1900" cy="2380" r="12"/>
+    <circle cx="2450" cy="900" r="10"/>
+    <circle cx="300" cy="1100" r="10"/>
+    <circle cx="1366" cy="240" r="9"/>
+    <circle cx="620" cy="2350" r="9"/>
+  </g>
+  <!-- constellation triangle, centred -->
+  <g filter="url(#glow)">
+    <polygon points="1366,820 2050,1720 682,1720" fill="none" stroke="url(#tri)" stroke-width="34" stroke-linejoin="round"/>
+    <circle cx="1366" cy="820" r="86" fill="#00e5ff"/>
+    <circle cx="2050" cy="1720" r="86" fill="#ff0099"/>
+    <circle cx="682" cy="1720" r="86" fill="#ffe14d"/>
+    <!-- ship at the triangle's heart -->
+    <polygon points="1366,1150 1462,1360 1366,1300 1270,1360" fill="#00e5ff"/>
+  </g>
+  <text x="1366" y="2080" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="150" font-weight="700" letter-spacing="34" fill="#eaf6ff">STARFALL</text>
+  <text x="1366" y="2200" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="54" font-weight="400" letter-spacing="18" fill="#7f8fc9">CONSTELLATION BREAKER</text>
+</svg>

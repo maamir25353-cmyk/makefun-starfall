@@ -185,7 +185,7 @@ function selectUpgrade(i) {
   takenUpgrades.add(u.id);
   if (u.id === "shield") shieldTimer = upg.shieldTimer;
   announce(u.name.toUpperCase() + "!", "#00e5ff");
-  sfx.ready();
+  sfx.ready(); HapticsFX.notify("success");
   sector++;
   sectorTime = 0;
   clearHazards();
@@ -235,6 +235,7 @@ function resetGame(mode) {
      choose an upgrade on the first frame. */
   for (const k in keys) keys[k] = false;
   Input.mouseDown = false;
+  Input.touchActive = false; Input.touchX = undefined; Input.touchY = undefined;
   resetConstellation(constellation);
   const wantTutorial = mode === "tutorial" ? true : mode === "normal" ? false : !tutorialDone;
   tutorialStep = 0; tutorialStepTime = 0;
@@ -312,7 +313,7 @@ function hitShip(r) {
   }
   if (shieldTimer > 0) { breakRock(rocks.indexOf(r)); addFloat(ship.x, ship.y - 28, "BLOCKED", "#00e5ff", 16); return; }
   lives--; flash = 1; shake = 12; ship.invuln = 2.2;
-  burst(ship.x, ship.y, "#00e5ff", 30, 320); sfx.hit();
+  burst(ship.x, ship.y, "#00e5ff", 30, 320); sfx.hit(); HapticsFX.impact("heavy");
   rocks.splice(rocks.indexOf(r), 1);
   combo = 0; comboTimer = 0;
   if (lives <= 0) gameOver();
@@ -328,7 +329,7 @@ function hitShipByEnemy(arr, obj, remove) {
     return;
   }
   lives--; flash = 1; shake = 12; ship.invuln = 2.2;
-  burst(ship.x, ship.y, "#00e5ff", 30, 320); sfx.hit();
+  burst(ship.x, ship.y, "#00e5ff", 30, 320); sfx.hit(); HapticsFX.impact("heavy");
   if (remove) remove();
   else if (arr && obj) arr.splice(arr.indexOf(obj), 1);
   combo = 0; comboTimer = 0;
@@ -434,7 +435,7 @@ function detonateConstellation() {
   constellationsCompleted++;
   detPulse = { x: cx, y: cy, t: 0, max: 0.5 };
   flash = 0.7; shake = 10; hitStop = 0.08; /* brief hit-stop freeze, not a pause */
-  sfx.detonate();
+  sfx.detonate(); HapticsFX.impact("heavy");
   clearBanner(); /* the TRIANGLE READY notice is stale once detonated */
   addFloat(cx, cy - 10, "CONSTELLATION +" + gained, "#ffe14d", 22);
   burst(cx, cy, "#ffe14d", 30, 320);
@@ -469,10 +470,18 @@ function update(dt) {
      movement keys are held (a stationary pointer never fights keys) */
   const ax = (keys["arrowright"] || keys["d"] ? 1 : 0) - (keys["arrowleft"] || keys["a"] ? 1 : 0);
   const ay = (keys["arrowdown"] || keys["s"] ? 1 : 0) - (keys["arrowup"] || keys["w"] ? 1 : 0);
+  /* Touch steering takes priority over the mouse glide (a touch device
+     has no mouse position, but a hybrid laptop might): the ship glides
+     toward the finger's offset target while the finger is down, and
+     stops when it lifts (input.js clears touchX/touchY on touchend). */
   if (ax || ay) {
     ship.vx += ax * 1500 * dt; ship.vy += ay * 1500 * dt;
     ship.angle = Math.atan2(ship.vy, ship.vx);
     ship.thrust = 1;
+  } else if (Input.touchActive && Input.touchX !== undefined) {
+    const dx = Input.touchX - ship.x, dy = Input.touchY - ship.y, d = Math.hypot(dx, dy);
+    if (d > 8) { ship.vx += (dx / d) * 1100 * dt; ship.vy += (dy / d) * 1100 * dt; ship.angle = Math.atan2(dy, dx); ship.thrust = 0.7; }
+    else ship.thrust = 0;
   } else if (Input.mouseX !== undefined) {
     const dx = Input.mouseX - ship.x, dy = Input.mouseY - ship.y, d = Math.hypot(dx, dy);
     if (d > 8) { ship.vx += (dx / d) * 1100 * dt; ship.vy += (dy / d) * 1100 * dt; ship.angle = Math.atan2(dy, dx); ship.thrust = 0.7; }
@@ -484,7 +493,12 @@ function update(dt) {
   if (ship.invuln > 0) ship.invuln -= dt;
   if (shieldTimer > 0) shieldTimer -= dt;
   ship.fireCd -= dt;
-  if (keys[" "] || Input.mouseDown) fire();
+  /* Auto-fire on touch devices (Input.touchMode, set on first
+     touchstart): the ship fires while playing with no need to hold.
+     This also satisfies the tutorial's shoot step (step 1 waits for
+     shotsFired > 0) for a touch player. Desktop is unchanged:
+     Space or mouse hold still fires. */
+  if (keys[" "] || Input.mouseDown || Input.touchMode) fire();
 
   /* tutorial flow */
   if (tutorialActive) {
@@ -680,23 +694,32 @@ function draw() {
   });
 }
 
-/* ---------- input wiring (listeners registered once, at load) ---------- */
+/* ---------- input wiring (listeners registered once, at load) ----------
+   doTogglePause / doToggleMute / doRestart are the single implementations
+   shared by the keyboard (P/M/R) and the on-screen touch buttons, so the
+   two routes can never drift apart. */
+function doTogglePause() {
+  if (state === "playing") state = "paused";
+  else if (state === "paused") state = "playing";
+}
+function doToggleMute() {
+  muted = !muted;
+  if (typeof setMuted === "function") setMuted(muted);
+}
+function doRestart() {
+  if (state === "over" || state === "paused" || state === "victory") { resetGame(); state = "playing"; }
+}
 initInput(cv, {
   unlockAudio() { audio(); },
   isPlaying() { return state === "playing"; },
   fire() { if (state === "playing") fire(); },
-  toggleMute() { muted = !muted; if (typeof setMuted === "function") setMuted(muted); },
+  toggleMute() { doToggleMute(); },
   toggleFx() {
     reducedFx = !reducedFx;
     announce(reducedFx ? "REDUCED EFFECTS ON" : "FULL EFFECTS ON", "#00e5ff");
   },
-  togglePause() {
-    if (state === "playing") state = "paused";
-    else if (state === "paused") state = "playing";
-  },
-  restart() {
-    if (state === "over" || state === "paused" || state === "victory") { resetGame(); state = "playing"; }
-  },
+  togglePause() { doTogglePause(); },
+  restart() { doRestart(); },
   isUpgrade() { return state === "upgrade"; },
   onUpgradeSelect(i) { selectUpgrade(i); },
   confirm() {
@@ -719,6 +742,21 @@ initInput(cv, {
   },
   onBlur() { if (state === "playing") state = "paused"; }
 });
+
+/* On-screen touch buttons (index.html #touch-ui, shown only once a touch
+   has been detected via body.touch). Each tap also calls audio() so the
+   first button tap unlocks iOS audio just like a canvas touch does. */
+(function wireTouchButtons() {
+  const btnPause = document.getElementById("btn-pause");
+  const btnMute = document.getElementById("btn-mute");
+  const btnRestart = document.getElementById("btn-restart");
+  if (btnPause) btnPause.addEventListener("click", () => { audio(); doTogglePause(); });
+  if (btnMute) btnMute.addEventListener("click", () => {
+    audio(); doToggleMute();
+    btnMute.classList.toggle("muted", muted);
+  });
+  if (btnRestart) btnRestart.addEventListener("click", () => { audio(); doRestart(); });
+})();
 
 /* ---------- main loop ---------- */
 let last = performance.now();
