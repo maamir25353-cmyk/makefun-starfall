@@ -2,24 +2,58 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>STARFALL: CONSTELLATION BREAKER — Neon Arcade Space Game</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: #050514; overflow: hidden;
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: #eaf6ff; }
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: #eaf6ff;
+    touch-action: none; overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent; }
   #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
     background: radial-gradient(1200px 700px at 50% 20%, #141b4d 0%, #050514 60%, #02020a 100%); }
   canvas { display: block; width: min(96vw, 960px, calc(92vh * 1.5)); aspect-ratio: 960 / 640; height: auto;
     border-radius: 14px; box-shadow: 0 0 0 1px #2b3a7a, 0 0 44px rgba(0,229,255,.25), 0 0 90px rgba(255,0,153,.12);
-    background: #050514; cursor: crosshair; }
-  #hint { position: fixed; left: 0; right: 0; bottom: 10px; text-align: center;
+    background: #050514; cursor: crosshair; touch-action: none; }
+  #hint { position: fixed; left: 0; right: 0; bottom: 0; text-align: center;
+    padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
     font-size: 12px; letter-spacing: .08em; color: #7f8fc9; pointer-events: none; }
+  /* On-screen touch buttons: hidden on desktop, shown only after a real
+     touch is detected (body.touch, set by input.js on first touchstart),
+     so touch-capable laptops keep the clean desktop UI. */
+  #touch-ui { display: none; }
+  body.touch #touch-ui { display: block; }
+  #touch-ui button { position: fixed; z-index: 30; width: 46px; height: 46px;
+    border-radius: 12px; background: rgba(5,5,20,.55);
+    border: 1px solid rgba(0,229,255,.55); color: #00e5ff;
+    font-size: 20px; line-height: 1; cursor: pointer; pointer-events: auto;
+    box-shadow: 0 0 12px rgba(0,229,255,.25); }
+  #touch-ui button:active { background: rgba(0,229,255,.28); }
+  #touch-ui button.muted { opacity: .45; }
+  #btn-pause { top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(10px + env(safe-area-inset-left, 0px)); }
+  #btn-mute { top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px)); }
+  #btn-restart { top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(66px + env(safe-area-inset-right, 0px)); }
+  /* Portrait overlay: shown when the viewport is taller than it is wide
+     (JS check below, on load / resize / orientationchange). The landscape
+     lock itself lives in the iOS project; this is the web fallback. */
+  #rotate-overlay { display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(5,5,20,.96); align-items: center; justify-content: center; text-align: center; }
+  #rotate-overlay.show { display: flex; }
+  #rotate-overlay .msg { font-size: 22px; font-weight: bold; letter-spacing: .12em; color: #ffe14d;
+    text-shadow: 0 0 16px rgba(255,225,77,.6); padding: 0 24px; }
+  #rotate-overlay .sub { margin-top: 12px; font-size: 14px; letter-spacing: .06em; color: #eaf6ff; }
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="game" width="960" height="640"></canvas></div>
 <div id="hint">STARFALL — ARROWS / WASD — FLY &nbsp;·&nbsp; SPACE / CLICK — SHOOT &nbsp;·&nbsp; P — PAUSE &nbsp;·&nbsp; M — SOUND &nbsp;·&nbsp; G — REDUCED EFFECTS &nbsp;·&nbsp; R — RESTART &nbsp;·&nbsp; GAME OVER? PRESS R TO FLY AGAIN</div>
+<div id="touch-ui">
+  <button id="btn-pause" type="button" aria-label="Pause">&#10074;&#10074;</button>
+  <button id="btn-mute" type="button" aria-label="Mute sound">&#9834;</button>
+  <button id="btn-restart" type="button" aria-label="Restart">&#8635;</button>
+</div>
+<div id="rotate-overlay"><div class="msg">ROTATE YOUR iPHONE<div class="sub">Starfall plays in landscape &mdash; turn your phone sideways</div></div></div>
 <script src="src/audio.js" defer></script>
 <script src="src/constellation.js" defer></script>
 <script src="src/upgrades.js" defer></script>
@@ -27,6 +61,18 @@
 <script src="src/enemies.js" defer></script>
 <script src="src/boss.js" defer></script>
 <script src="src/render.js" defer></script>
+<script src="src/haptics.js" defer></script>
 <script src="src/main.js" defer></script>
+<script>
+/* Portrait check: show the rotate overlay whenever the viewport is
+   taller than it is wide (checked on load, resize, orientationchange). */
+(function () {
+  var ov = document.getElementById("rotate-overlay");
+  function check() { ov.classList.toggle("show", window.innerHeight > window.innerWidth); }
+  window.addEventListener("resize", check);
+  window.addEventListener("orientationchange", check);
+  check();
+})();
+</script>
 </body>
 </html>
