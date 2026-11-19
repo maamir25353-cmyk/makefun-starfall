@@ -1,3 +1,5 @@
+# Re-trigger 2026-11-19: previous run 44536181692 was cancelled by GitHub
+# (no macOS runner picked it up); no code or workflow change, just re-run.
 # Starfall — unsigned iOS build (Capacitor 8, no signing).
 #
 # Produces an UNSIGNED .ipa (CODE_SIGNING_ALLOWED=NO) for sideloading /
