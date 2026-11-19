@@ -28,12 +28,15 @@ on:
 jobs:
   build-ios:
     name: Build unsigned iOS .ipa
-    # macos-26 runners were unavailable twice (runs 44536181692 and
-    # 44541703200 both sat queued 15 min then cancelled, no step ran:
-    # "job was not acquired by Runner of type hosted"). macos-15 has
-    # ample capacity and ships Xcode 16, which satisfies Capacitor 8
-    # (needs Xcode 15+). Nothing in this build needs Xcode 26.
-    runs-on: macos-15
+    # macos-26 (runs 44536181692, 44541703200) and macos-15 (run
+    # 44544588142) all sat queued ~15 min then cancelled, no step ran:
+    # "job was not acquired by Runner of type hosted" — GitHub-wide
+    # macOS arm64 capacity problem, Nov 2026. macos-15-intel is a
+    # separate Intel pool (4 CPU, 14 GB), not the arm64 pool; an Intel
+    # Mac still builds an arm64 iOS target with Xcode 16, which
+    # satisfies Capacitor 8 (needs Xcode 15+). Unsigned test .ipa only —
+    # App Store uploads later need Xcode 26+ per Apple (28 Apr 2026).
+    runs-on: macos-15-intel
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
